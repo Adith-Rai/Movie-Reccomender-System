@@ -15,7 +15,7 @@ from UserSimilarityKNN import UserSimilarityKNN
 
 class ExplainableRBM(AlgoBase):
 
-    def __init__(self, dl, epochs=50, hiddenDimensions=100, learningRate=0.01, batchSize=100, userTopK=40, movieTopK=40):
+    def __init__(self, dl, epochs=50, hiddenDimensions=500, learningRate=0.007, batchSize=100, userTopK=40, movieTopK=40):
         AlgoBase.__init__(self)
             
         self.uk = userTopK
@@ -36,13 +36,14 @@ class ExplainableRBM(AlgoBase):
 
         #Initialize and Generate Item Similarities
         movieSimKNN = MovieSimilarityKNN(self.dl, k=self.mk)
-        movieSimKNN.fit(trainset, False)
+        movieSimKNN.fit(trainset, train)
 
         userCount = trainset.n_users
         movieCount = trainset.n_items
         
         #Not using sparse matrix because computing user similarities takes too long with scipy matrix 
         #converting scipy sparse -> numpy array and computing takes too longs as well
+        #Used float32 rather than float16 as computations time for float16 was taking too long (operations on modern systems need to be converted to float32 and the result back to float 16)
         trainingMatrix = np.zeros([userCount, movieCount], dtype=np.float32)
         
         for (uid, iid, rating) in trainset.all_ratings():           
@@ -63,6 +64,8 @@ class ExplainableRBM(AlgoBase):
         if train:
             self.densetrainingMatrix =  movieSimKNN.mergeMovieSimilaritiesUserRatings(trainingMatrix)
             self.userSimilarityRatings = userSimKNN.computeUserKNNAlgorithm(self.densetrainingMatrix)
+            print(self.densetrainingMatrix)
+            print(self.userSimilarityRatings)
         else:
             self.load()
             if (self.userSimilarityRatings.shape!=trainingMatrix.shape) or (self.densetrainingMatrix.shape!=trainingMatrix.shape):

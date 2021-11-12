@@ -85,7 +85,9 @@ class MovieSimilarityKNN:
         return self
    
 
-    def mergeMovieSimilaritiesUserRatings(self, trainingMatrix, userName=None):
+    def mergeMovieSimilaritiesUserRatings(self, sparseMatrix, userName=None):
+        
+        trainingMatrix = np.copy(sparseMatrix)
         
         print("\nFilling User Ratings with Item Similarity Ratings...")
         

@@ -18,10 +18,11 @@ np.random.seed(0)
 random.seed(0)
 
 #Initialize File Paths
-#dl = DataLoad(100000) - for 4GB RAM
-#dl = DataLoad(250000) - for 8GB RAM
-#dl = DataLoad(350000) - for 12BG RAM
-dl = DataLoad(1000000)
+#dl = DataLoad(1000000) - max 1M ratings for 4GB RAM - will take many many hours
+#dl = DataLoad(3000000) - max 3M ratings for 8GB RAM - will take many many hours, or even upto a day
+#dl = DataLoad(4500000) - max 4.5M ratings for 12BG RAM - will take many many hours, or even upto a day or two
+#dl = DataLoad(7000000) - max 7M ratings for 16GB RAM - will take many many hours, or even upto a day or two
+dl = DataLoad(100000)
 
 
 
