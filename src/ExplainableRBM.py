@@ -15,7 +15,7 @@ from UserSimilarityKNN import UserSimilarityKNN
 
 class ExplainableRBM(AlgoBase):
 
-    def __init__(self, dl, epochs=50, hiddenDimensions=500, learningRate=0.01, batchSize=100, userTopK=40, movieTopK=40):
+    def __init__(self, dl, epochs=20, hiddenDimensions=500, learningRate=0.0045, batchSize=100, userTopK=40, movieTopK=40):
         AlgoBase.__init__(self)
             
         self.uk = userTopK
@@ -74,6 +74,7 @@ class ExplainableRBM(AlgoBase):
             self.densetrainingMatrix[trainset.to_inner_uid(str(userID))] =  (movieSimKNN.mergeMovieSimilaritiesUserRatings(trainingMatrix, trainset.to_inner_uid(str(userID))))[trainset.to_inner_uid(str(userID))]
             self.userSimilarityRatings[trainset.to_inner_uid(str(userID))] = (userSimKNN.computeUserKNNAlgorithm(trainingMatrix, self.densetrainingMatrix, trainset.to_inner_uid(str(userID))))[trainset.to_inner_uid(str(userID))]
 
+        
         print("\nInitializing Session...\n")
         
         self.sess.run(tf.global_variables_initializer()) 
@@ -119,10 +120,10 @@ class ExplainableRBM(AlgoBase):
                 if (uiid % 50 == 0):
                     print("Processing user  " + str(uiid) + "  of  " + str(userCount))
             
-                self.computeUserRecommendation(uiid, self.densetrainingMatrix)
+                self.computeUserRecommendation(uiid)
         else:
             #Compute recomendations for only the single selected user
-            self.computeUserRecommendation(trainset.to_inner_uid(str(userID)), self.densetrainingMatrix)
+            self.computeUserRecommendation(trainset.to_inner_uid(str(userID)))
            
 
         print("\nPredicted User Ratings Computed using Exlpainable RBM")
@@ -186,7 +187,7 @@ class ExplainableRBM(AlgoBase):
  
  
    
-    def computeUserRecommendation(self, uiid, trainingMatrix):
+    def computeUserRecommendation(self, uiid):
         
         thisUserID = int(self.trainset.to_raw_uid(uiid))
 
@@ -223,7 +224,7 @@ class ExplainableRBM(AlgoBase):
             #95% based on predicted rating and year 5% based on average rating and popularity
             ratingAssigned = (0.95*predRatingRelavance + 0.05*ratingPopularityWeight)*5.0
                 
-            self.predictedRatings[uiid, itemID] = predRating*5.0#ratingAssigned#predRating*5.0
+            self.predictedRatings[uiid, itemID] = ratingAssigned
         
     
     def estimate(self, u, i):

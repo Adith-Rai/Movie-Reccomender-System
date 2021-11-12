@@ -69,9 +69,9 @@ class UserSimilarityKNN:
                 for j in range(self.k):
                     itemSimSum += tmpMatrix[i][j]
                     maxRatingSum += tmpMatrix[i][maxRatingIndex]
-            userSimilarityMovieScore[i] = itemSimSum + (itemSimSum/maxRatingSum)*self.k
+            userSimilarityMovieScore[i] = (itemSimSum/maxRatingSum)
 
-        return self.normalizeArray(userSimilarityMovieScore)
+        return userSimilarityMovieScore
     
  
    #Find Cosine similarities between users
