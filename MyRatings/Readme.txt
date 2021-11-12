@@ -1,0 +1,2 @@
+Paste your user ratings from MovieLens here.
+5)	Download your ratings in csv format from Movie Lens (you can do this in settings > export ratings). Paste the downloaded ratings in the directory: “MyRatings”
