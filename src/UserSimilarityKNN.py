@@ -9,11 +9,11 @@ class UserSimilarityKNN:
         self.k = k
         self.dl = dl
         
-    def computeUserKNNAlgorithm(self, denseMatrix, userName=None):
+    def computeUserKNNAlgorithm(self, sparseMatrix, denseMatrix, userName=None):
         
        print("\nComputing All Users Similarity Based Ratings...")
        
-       trainingMatrix = np.copy(denseMatrix)
+       trainingMatrix = np.copy(sparseMatrix)
        
        start=0
        end=trainingMatrix.shape[0]       
@@ -35,7 +35,7 @@ class UserSimilarityKNN:
                userSimilarities[user, otherUser] = self.computeCosineSimilarity(trainingMatrix[user], trainingMatrix[otherUser])
                userSimilarities[otherUser, user] = userSimilarities[user, otherUser]
                
-           trainingMatrix[user] = self.computeUserNeighbourhoodRatings(userSimilarities[user], trainingMatrix)  
+           trainingMatrix[user] = self.computeUserNeighbourhoodRatings(userSimilarities[user], denseMatrix)  
                 
            print("*", end="")
            if ((user+1) % 50 == 0):
@@ -46,19 +46,19 @@ class UserSimilarityKNN:
 
     
     #Find top-k similar users in user's neighbourhood
-    def computeUserNeighbourhoodRatings(self, similarities, trainingMatrix):
+    def computeUserNeighbourhoodRatings(self, similarities, denseMatrix):
         
-        tmpMatrix = np.zeros([self.k, trainingMatrix.shape[1]], dtype=np.float32)
+        tmpMatrix = np.zeros([self.k, denseMatrix.shape[1]], dtype=np.float32)
         userSimTmp = np.copy(similarities)
 
         for i in range(self.k):
             index = userSimTmp.argmax()            
-            tmpMatrix[i] = trainingMatrix[index] * userSimTmp[index]
+            tmpMatrix[i] = denseMatrix[index] * userSimTmp[index]
             userSimTmp[index] = -1.0
             
         tmpMatrix = tmpMatrix.T
-        userSimilarityMovieScore = np.zeros([trainingMatrix.shape[1]], dtype=np.float32)
-        for i in range(trainingMatrix.shape[1]):
+        userSimilarityMovieScore = np.zeros([denseMatrix.shape[1]], dtype=np.float32)
+        for i in range(denseMatrix.shape[1]):
             maxRatingIndex = tmpMatrix[i].argmax()
             itemSimSum = 0.0
             maxRatingSum = 0.0

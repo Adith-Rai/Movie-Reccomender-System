@@ -15,7 +15,7 @@ from UserSimilarityKNN import UserSimilarityKNN
 
 class ExplainableRBM(AlgoBase):
 
-    def __init__(self, dl, epochs=50, hiddenDimensions=500, learningRate=0.007, batchSize=100, userTopK=40, movieTopK=40):
+    def __init__(self, dl, epochs=50, hiddenDimensions=500, learningRate=0.01, batchSize=100, userTopK=40, movieTopK=40):
         AlgoBase.__init__(self)
             
         self.uk = userTopK
@@ -63,9 +63,8 @@ class ExplainableRBM(AlgoBase):
         userSimKNN = UserSimilarityKNN(self.dl, k=self.uk)
         if train:
             self.densetrainingMatrix =  movieSimKNN.mergeMovieSimilaritiesUserRatings(trainingMatrix)
-            self.userSimilarityRatings = userSimKNN.computeUserKNNAlgorithm(self.densetrainingMatrix)
-            print(self.densetrainingMatrix)
-            print(self.userSimilarityRatings)
+            self.userSimilarityRatings = userSimKNN.computeUserKNNAlgorithm(trainingMatrix, self.densetrainingMatrix)
+
         else:
             self.load()
             if (self.userSimilarityRatings.shape!=trainingMatrix.shape) or (self.densetrainingMatrix.shape!=trainingMatrix.shape):
@@ -73,7 +72,7 @@ class ExplainableRBM(AlgoBase):
                 sys.exit() 
             #Modify only the row with userID passed
             self.densetrainingMatrix[trainset.to_inner_uid(str(userID))] =  (movieSimKNN.mergeMovieSimilaritiesUserRatings(trainingMatrix, trainset.to_inner_uid(str(userID))))[trainset.to_inner_uid(str(userID))]
-            self.userSimilarityRatings[trainset.to_inner_uid(str(userID))] = (userSimKNN.computeUserKNNAlgorithm(self.densetrainingMatrix, trainset.to_inner_uid(str(userID))))[trainset.to_inner_uid(str(userID))]
+            self.userSimilarityRatings[trainset.to_inner_uid(str(userID))] = (userSimKNN.computeUserKNNAlgorithm(trainingMatrix, self.densetrainingMatrix, trainset.to_inner_uid(str(userID))))[trainset.to_inner_uid(str(userID))]
 
         print("\nInitializing Session...\n")
         
