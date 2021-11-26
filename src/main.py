@@ -18,12 +18,12 @@ np.random.seed(0)
 random.seed(0)
 
 #Initialize File Paths
-#dl = DataLoad(1000000) #- max 1M ratings for 4GB RAM - will take many many hours
-#dl = DataLoad(3000000) #- max 3M ratings for 8GB RAM - will take many many hours, or even upto a day
-#dl = DataLoad(4500000) #- max 4.5M ratings for 12BG RAM - will take many many hours, or even upto a day or two
-#dl = DataLoad(7000000) #- max 7M ratings for 16GB RAM - will take many many hours, or even upto a day or two
-dl = DataLoad(100000)  #- For Quick training, but overtrained results due to very small dataset
-
+#dl = DataLoad(600000) #- max 600K ratings for 4GB RAM - will take many many hours
+#dl = DataLoad(1600000) #- max 1.6M ratings for 8GB RAM - will take many many hours, or even upto a day
+#dl = DataLoad(4000000) #- max 4M ratings for 12BG RAM - will take many many hours, or even upto a day or two
+#dl = DataLoad(6000000) #- max 6M ratings for 16GB RAM - will take many many hours, or even upto a day or two
+#dl = DataLoad(100000)  #- For Quick training, but overtrained results due to very small dataset
+dl = DataLoad(1000000)
 
 
 #Determine if Required files Exist
@@ -36,7 +36,7 @@ train = userCLI.optionSelecter()
 #Insert my ratings data into all user ratings
 dl.uploadUserData(myNewUserId)  
 
-# Construct an DataProcessing to get train and test set
+# Construct an DataProcessing to get train set
 dataProcessor = DataProcessing(dl.data)
 reccomender = GenerateRecommendations(dl.data, train)
 

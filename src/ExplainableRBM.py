@@ -15,7 +15,7 @@ from UserSimilarityKNN import UserSimilarityKNN
 
 class ExplainableRBM(AlgoBase):
 
-    def __init__(self, dl, epochs=20, hiddenDimensions=500, learningRate=0.0045, batchSize=100, userTopK=40, movieTopK=40):
+    def __init__(self, dl, epochs=20, hiddenDimensions=200, learningRate=0.005, batchSize=100, userTopK=40, movieTopK=40):
         AlgoBase.__init__(self)
             
         self.uk = userTopK
@@ -85,15 +85,12 @@ class ExplainableRBM(AlgoBase):
             print("\nTraining Explainable RBM...")
             for epoch in range(self.epochs):
 
-                trX = np.array(self.densetrainingMatrix)
                 trY = np.array(self.userSimilarityRatings)
-                for i in range(0, trX.shape[0], self.batchSize):
-                    self.sess.run(self.update, feed_dict={self.X: trX[i:i+self.batchSize], self.Y: trY[i:i+self.batchSize]})
+                for i in range(0, trY.shape[0], self.batchSize):
+                    self.sess.run(self.update, feed_dict={self.Y: trY[i:i+self.batchSize]})
 
                 print("\nTrained epoch ", epoch)
-                loss.append(self.sess.run(self.loss_sum, feed_dict={self.X: trX, self.Y: trY}))
-                print("Movies Loss: ", loss[-1])
-                sloss.append(self.sess.run(self.sloss_sum, feed_dict={self.X: trX, self.Y: trY}))
+                sloss.append(self.sess.run(self.sloss_sum, feed_dict={ self.Y: trY}))
                 print("Similarity Loss: ", sloss[-1])
                 
             plt.plot(loss, 'r')
@@ -113,7 +110,7 @@ class ExplainableRBM(AlgoBase):
         
         
         
-        if train:
+        if False:
             #Compute recomendations for every user
             for uiid in range(trainset.n_users):
             
@@ -137,11 +134,9 @@ class ExplainableRBM(AlgoBase):
         tf.set_random_seed(0)
         
         # Create variables for the graph, weights and biases
-        self.X = tf.placeholder(tf.float32, [None, self.visibleDimensions], name="X")
         self.Y = tf.placeholder(tf.float32, [None, self.visibleDimensions], name="Y")
         
         # Initialize weights as zero
-        self.weights = tf.Variable(tf.zeros([self.visibleDimensions, self.hiddenDimensions], tf.float32, name="weights"))
         self.simWeights = tf.Variable(tf.zeros([self.visibleDimensions, self.hiddenDimensions], tf.float32, name="similarityWeights"))
         
         #Initialize biases for hidden layer and visible layer (similarity and movies)
@@ -151,39 +146,31 @@ class ExplainableRBM(AlgoBase):
         
         # Forward pass for movies and similarities
         # Compute hidden layer
-        hProb0 = tf.nn.sigmoid(tf.matmul(self.X, self.weights) + tf.matmul(self.Y, self.simWeights) + self.hiddenBias)
+        hProb0 = tf.nn.sigmoid(tf.matmul(self.Y, self.simWeights) + self.hiddenBias)
         # Sample from all of the distributions
         hSample = tf.nn.relu(tf.sign(hProb0 - tf.random_uniform(tf.shape(hProb0))))
-        vforward = tf.matmul(tf.transpose(self.X), hSample)
         sforward = tf.matmul(tf.transpose(self.Y), hSample)
         
         # Backward pass
         # Stitch it together to define the backward pass and updated hidden biases
-        vProb = tf.nn.sigmoid(tf.matmul(hSample, tf.transpose(self.weights)) + self.visibleBias)
-        vSample = tf.nn.relu(tf.sign(vProb - tf.random_uniform(tf.shape(vProb))))
         sProb = tf.nn.sigmoid(tf.matmul(hSample, tf.transpose(self.simWeights)) + self.simBias)
         sSample = tf.nn.relu(tf.sign(sProb - tf.random_uniform(tf.shape(sProb))))
-        hProb1 = tf.nn.sigmoid(tf.matmul(vSample, self.weights) + tf.matmul(sSample, self.simWeights) + self.hiddenBias)
-        vbackward = tf.matmul(tf.transpose(vSample), hProb1)
+        hProb1 = tf.nn.sigmoid(tf.matmul(sSample, self.simWeights) + self.hiddenBias)
         sbackward = tf.matmul(tf.transpose(sSample), hProb1)
     
         # Update weights and biases
         # Update the weights by learning rate using the Contrastive divergence (forward - backward)
-        weightUpdate = self.weights.assign_add( (self.learningRate * (vforward - vbackward) / tf.to_float(tf.shape(self.X)[0])))
         simWeightUpdate = self.simWeights.assign_add( (self.learningRate * (sforward - sbackward) / tf.to_float(tf.shape(self.Y)[0])))
         # Update hidden bias, to reduce error between visible and hidden
         hiddenBiasUpdate = self.hiddenBias.assign_add( (self.learningRate * tf.reduce_mean(hSample - hProb1, 0)))
         # Update the visible/movie and similarity biases, to reduce error between visible and hidden
-        visibleBiasUpdate = self.visibleBias.assign_add( (self.learningRate * tf.reduce_mean(self.X - vSample, 0)))
         simBiasUpdate = self.simBias.assign_add( (self.learningRate * tf.reduce_mean(self.Y - sSample, 0)))
 
         # Calculate Loss (RMSE)
-        loss = (self.X - vSample) 
         sloss = (self.Y - sSample)
-        self.loss_sum = tf.sqrt(tf.reduce_mean(loss**2))
         self.sloss_sum = tf.sqrt(tf.reduce_mean(sloss**2))
 
-        self.update = [weightUpdate, hiddenBiasUpdate, visibleBiasUpdate, simWeightUpdate, simBiasUpdate]    
+        self.update = [hiddenBiasUpdate, simWeightUpdate, simBiasUpdate]    
  
  
    
@@ -191,16 +178,16 @@ class ExplainableRBM(AlgoBase):
         
         thisUserID = int(self.trainset.to_raw_uid(uiid))
 
-        hidden = tf.nn.sigmoid(tf.matmul(self.X, self.weights) + tf.matmul(self.Y, self.simWeights) + self.hiddenBias)
-        #similar = tf.nn.sigmoid(tf.matmul(hidden, tf.transpose(self.simWeights)) + self.simBias)
-        visible = tf.nn.sigmoid(tf.matmul(hidden, tf.transpose(self.weights)) + self.visibleBias)
+        hidden = tf.nn.sigmoid(tf.matmul(self.Y, self.simWeights) + self.hiddenBias)
+        similar = tf.nn.sigmoid(tf.matmul(hidden, tf.transpose(self.simWeights)) + self.simBias)
+        #visible = tf.nn.sigmoid(tf.matmul(hidden, tf.transpose(self.weights)) + self.visibleBias)
 
-        feed = self.sess.run(hidden, feed_dict={ self.X: [self.densetrainingMatrix[uiid]], self.Y: [self.userSimilarityRatings[uiid]]} )
-        #srec = self.sess.run(similar, feed_dict={ hidden: feed } )
-        vrec = self.sess.run(visible, feed_dict={ hidden: feed } )
+        feed = self.sess.run(hidden, feed_dict={ self.Y: [self.userSimilarityRatings[uiid]]} )
+        srec = self.sess.run(similar, feed_dict={ hidden: feed } )
+        #vrec = self.sess.run(visible, feed_dict={ hidden: feed } )
             
         #Average of movie rating predictions from movie ratings ###and similar users movie ratings
-        recs = vrec[0]#(srec[0] + vrec[0])/2.0
+        recs = srec[0]#(srec[0] + vrec[0])/2.0
             
             
         #Arrange the reccomendations in order of compatability to user

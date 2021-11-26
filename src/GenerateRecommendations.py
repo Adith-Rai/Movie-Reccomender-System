@@ -53,7 +53,7 @@ class GenerateRecommendations:
                 yearWeight = self.computeYearSimilarity(avgUsersYear[intUserID][0], allYears[intMovieID], avgUsersYear[intUserID][1])
                     
                 #add genre and year weights to predictions
-                estimatedRating = estimatedRating*0.8 + 0.1*(myGenresWeight * yearWeight) + 0.1*(avgMovieRating[intMovieID]*0.2 * popularityWeights[intMovieID])
+                estimatedRating = estimatedRating*0.7 + 0.2*(myGenresWeight*2 * yearWeight) + 0.1*(avgMovieRating[intMovieID]*0.2 * popularityWeights[intMovieID])
 
                 if len(genreFilter) == 0:
                     recommendations.append((intMovieID, estimatedRating))
