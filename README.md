@@ -53,7 +53,7 @@ Algorithms Used:
 
 Movie Similarity KNN
 
-This algorithm uses a custom KNN algorithm written using numpy, to determine similarities between all movies by computing the cosine similarities between their genres and from the movie genome dataset downloaded from movie lens (genomes come from the movie lens dataset which contains the percentage of various tags that make up the movie.) Additionally, the difference between release years, overall popularity in the data set and overage ratings given by every user are also used in the similarity score.
+This algorithm uses a custom KNN algorithm written using numpy, to determine similarities between all movies by computing the cosine similarities between their genres and from the movie genome dataset downloaded from movie lens (genomes come from the movie lens dataset which contains the percentage of various tags that make up the movie.) Additionally, the difference between release years, overall popularity in the data set and average ratings given by every user are also used in the similarity score.
 These movie similarities are used to create top-k (k=40 set by me, you can set it to different values if you wish) neighborhoods of the most similar movies and determine the movie’s estimated rating for every user.
 The main purpose of this KNN is to convert the sparse user ratings matrix into a dense matrix, by adding the Item Similarity ratings for each movie for each user in place of the unrated movies (rated 0 by default when unrated). 
 The reason this is done is because sparse data in an RBM leads to both overtraining and inaccurate results. So initially creating a dense matric can give much better predictions for the final recommendations.
