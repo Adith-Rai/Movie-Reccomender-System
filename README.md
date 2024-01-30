@@ -1,13 +1,12 @@
-# MovieRecommender
+# Movie Recommender System
 
-Movie Recommender System – High-Level Information
 
 This is a movie recommender system that uses the movie lens latest dataset (link: https://files.grouplens.org/datasets/movielens/ml-latest.zip ) to generate movie recommendation for a user based on their already existing movie lens ratings. 
 (You can rate movies on movie lens and download your ratings from there if you don’t already have Movie Lens Ratings). 
 The program utilizes a KNN algorithm to generate content-based similarities and another KNN to generate user-based similarities. Both the resulting matrices are passed as two sets of visible dimensions to a modified RBM to generate recommendation for the user.
 
 
-Required Libraries:
+## Required Libraries:
 
 1)	Python 3.8 (should work with versions >= python 3.6)
 2)	Surprise (used to convert movie ratings into a training dataset)
