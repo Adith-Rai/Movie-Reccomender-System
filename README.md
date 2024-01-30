@@ -34,19 +34,21 @@ Note: It is recommended that a machine with at least 16GB of RAM is used, howeve
 12)	The program will then display 25 of you topmost recommended movies, and will save a csv file with rankings of ALL the movie recommendations – consisting of all the movies in the dataset – in the directory “MyReccomendations”
 
 
-## The Model:
+## High Level Control Flow:
 
-### High Level Control Flow:
+- The program first chops the ratings data into only 3 million ratings (to fit into memory on personal computers) and saves a copy of the original file.
+- The ratings are then fed into surprise library (not written by me) to convert the ratings into a dataset. This dataset is what is used as the initial training matrix in the model. 
+- Data from other files are read and used to construct the genre vectors, genome vectors, average movie ratings, popularity ranks, movie years and saved matrices and model weights pre-compute by me so a user won’t have to (since it would take several hours to conduct training to get recommendations otherwise) that are used in the following algorithms. 
+- The model uses a Content Based Similarity KNN, User Similarity KNN (collaborative filtering) and an RBM with two Visible Dimension inputs to predict user ratings for un-watched movies. 
+- The model first uses a KNN to compute content-based similarities for every movie and predict ratings for the unrated movies for every user. The purpose of this is to remove the sparse matrix problem, as user ratings data is very sparse.
+- The resulting predicted ratings from this algorithm are used to replace the ratings for the unrated movies for each user, resulting in a dense matrix.
+- This dense matrix, which is a merged user-rating-and-item-similarity-predicted-rating matrix, is then passed into another KNN.
+- This second KNN uses data to determine user similarities and predictions for all ratings from the previously constructed dense matrix – This is the collaborative filtering step.
+- The matrices computed from each of the KNNs – the first merged item similarity predicted movie ratings and the second user similarity predicted movie ratings – are both passed as visible dimension into a special custom RBM that takes two sets of visible dimensions, which then uses contrastive divergence to converge and predict ratings for every user.
+- The resulting ratings from the RBM are then further slightly modified by average user ratings based on time of rating, most popular genre for each use, overall popularity of movies weighted by number of ratings and finally the similarity of the movie’s release year to the median release year of the movies in each user’s dataset.
+- Movies with words in their titles matching words in the stoplist file (“stoplist.txt” in “stoplist” directory) are filtered out and not added in the recommendations.
+- These slightly adjusted ratings are then used to produce movie recommendations ordered by rank (predicted rating) for the user in question.
 
-The program first chops the ratings data into only 3 million ratings (to fit into memory on personal computers) and saves a copy of the original file. The ratings are then fed into surprise library (not written by me) to convert the ratings into a dataset. This dataset is what is used as the initial training matrix in the model. 
-Data from other files are read and used to construct the genre vectors, genome vectors, average movie ratings, popularity ranks, movie years and saved matrices and model weights pre-compute by me so a user won’t have to (since it would take several hours to conduct training to get recommendations otherwise) that are used in the following algorithms. This and the following sections are written by hand.
-The model uses a Content Based Similarity KNN, User Similarity KNN (collaborative filtering) and an RBM with two Visible Dimension inputs. 
-The model first uses KNN to compute content-based similarities for every movie and predict ratings for the unknown movie ratings for every user. The purpose of this is to remove the sparse matrix problem, as user ratings data is very sparse. The resulting predicted ratings from this algorithm are used to replace the ratings for the unrated movies for each user, resulting in a dense matrix.
-This dense matrix, which is a merged user-rating-and- item-similarity-predicted-rating matrix, is then passed into another KNN which determines user similarities and predictions for all ratings from the previously constructed dense matrix – This is the collaborative filtering step.
-The matrices computed from each of the KNNs – the first merged item similarity predicted movie ratings and the second user similarity predicted movie ratings – are both passed as visible dimension into a special custom RBM that takes two sets of visible dimensions, which then uses contrastive divergence to converge and predict ratings for every user.
-The resulting ratings from the RBM are then further slightly modified by average user ratings based on time of rating, most popular genre for each use, overall popularity of movies weighted by number of ratings and finally the similarity of the movie’s release year to the median release year of the movies in each user’s dataset.
-Movies with words in their titles matching words in the stoplist file (“stoplist.txt” in “stoplist” directory) are filtered out and not added in the recommendations.
-These slightly adjusted ratings are then used to produce movie recommendations ordered by rank (predicted rating) for the user in question. 
 Note: Due to the long computational times and high amount of RAM usage, the model is pretrained to determine movie similarities, and user ratings and RBM variable weights for all users in the data set – not including your personal ratings. After which only the personal movie similarity ratings, user similarity ratings and overall predicted movie ratings and recommendations are computed for the ratings added in the “MyRatings” directory.
 
 ## Algorithms Used:
