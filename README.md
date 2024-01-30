@@ -48,8 +48,9 @@ Note: It is recommended that a machine with at least 16GB of RAM is used, howeve
 - The resulting ratings from the RBM are then further slightly modified by average user ratings based on time of rating, most popular genre for each use, overall popularity of movies weighted by number of ratings and finally the similarity of the movie’s release year to the median release year of the movies in each user’s dataset.
 - Movies with words in their titles matching words in the stoplist file (“stoplist.txt” in “stoplist” directory) are filtered out and not added in the recommendations.
 - These slightly adjusted ratings are then used to produce movie recommendations ordered by rank (predicted rating) for the user in question.
+- The movie reccomendations for the user, including the personal movie similarity ratings, user similarity ratings and overall predicted movie ratings are computed for the user and saved as a .csv file in the “MyRatings” directory.
 
-Note: Due to the long computational times and high amount of RAM usage, the model is pretrained to determine movie similarities, and user ratings and RBM variable weights for all users in the data set – not including your personal ratings. After which only the personal movie similarity ratings, user similarity ratings and overall predicted movie ratings and recommendations are computed for the ratings added in the “MyRatings” directory.
+Note: Due to the long computational times and high amount of RAM usage, the model is pretrained to determine movie similarities, and user ratings and RBM variable weights for all users in the data set – not including your personal ratings.
 
 ## Algorithms Used:
 
